@@ -1,26 +1,33 @@
-pipeline {
+pipeline{
+    //Directives
     agent any
-    environment {
-        PATH = "/opt/apache-maven-3.6.3/bin:$PATH"
+    tools {
+       maven 'maven'
     }
+    environment{
+       ArtifactId = readMavenPom().getArtifactId()
+       Version = readMavenPom().getVersion()
+       Name = readMavenPom().getName()
+       GroupId = readMavenPom().getGroupId()
+    }
+
     stages {
-        stage("clone code"){
-            steps{
-               git credentialsId: 'git_credentials', url: 'https://github.com/ajit9790/jenkins_declaritive_pipeline.git'
+        // Specify various stage with in stages
+
+        // stage 1. Build
+        stage ('Build'){
+            steps {
+                sh 'mvn clean install package'
             }
         }
-        stage("build code"){
-            steps{
-              sh "mvn clean install"
+
+        // Stage2 : Testing
+        stage ('Test'){
+            steps {
+                echo ' testing......'
+
             }
         }
-        stage("deploy"){
-            steps{
-              sshagent(['deploy_user']) {
-                 sh "scp -o StrictHostKeyChecking=no webapp/target/webapp.war ec2-user@18.223.20.170:/opt/apache-tomcat-8.5.55/webapps"
-                 
-                }
-            }
-        }
-    }
-}
+        
+    }    
+}   
